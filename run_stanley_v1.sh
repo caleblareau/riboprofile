@@ -1,0 +1,12 @@
+Rscript Riboprofile.R --fastq ../rpfseq_6feb/HAP1_FMR1_0507_rep1_1.fastq.gz --outdir FMR1_0507_rep1
+Rscript Riboprofile.R --fastq ../rpfseq_6feb/HAP1_FMR1_0507_rep2_1.fastq.gz --outdir FMR1_0507_rep2
+Rscript Riboprofile.R --fastq ../rpfseq_6feb/HAP1_FMR1_0507_rep3_1.fastq.gz --outdir FMR1_0507_rep3
+Rscript Riboprofile.R --fastq ../rpfseq_6feb/HAP1_FMR1_3731_rep1_1.fastq.gz --outdir FMR1_3731_rep1
+Rscript Riboprofile.R --fastq ../rpfseq_6feb/HAP1_FMR1_3731_rep2_1.fastq.gz --outdir FMR1_3731_rep2
+Rscript Riboprofile.R --fastq ../rpfseq_6feb/HAP1_FMR1_3731_rep3_1.fastq.gz --outdir FMR1_3731_rep3
+Rscript Riboprofile.R --fastq ../rpfseq_6feb/HAP1_FMR1_DMSO_rep1_1.fastq.gz --outdir FMR1_DMSO_rep1
+Rscript Riboprofile.R --fastq ../rpfseq_6feb/HAP1_FMR1_DMSO_rep2_1.fastq.gz --outdir FMR1_DMSO_rep2
+Rscript Riboprofile.R --fastq ../rpfseq_6feb/HAP1_FMR1_DMSO_rep3_1.fastq.gz --outdir FMR1_DMSO_rep3
+Rscript Riboprofile.R --fastq ../rpfseq_6feb/HAP1_Parent_rep1_1.fastq.gz --outdir Parent_rep1
+Rscript Riboprofile.R --fastq ../rpfseq_6feb/HAP1_Parent_rep2_1.fastq.gz --outdir Parent_rep2
+Rscript Riboprofile.R --fastq ../rpfseq_6feb/HAP1_Parent_rep3_1.fastq.gz --outdir Parent_rep3

@@ -49,9 +49,10 @@ if(rg == "hg38"){
   rRNA <- diffloop::bedToGRanges(paste0(g_base, "/hg38_rRNA.bed"))
   tRNA <- diffloop::bedToGRanges(paste0(g_base, "/hg38_tRNA.bed"))
   
+  gtffile <- "/data/joung/caleb/base_editing/hg38/genes.gtf"
+  
   a_base <-  paste0(g_base, "/rds_anno/")
-  exons <- readRDS(paste0(a_base, "exons.hg38.gr.rds"))
-  introns <- readRDS(paste0(a_base, "introns.hg38.gr.rds"))
+  cds <- readRDS(paste0(a_base, "cds.hg38.gr.rds"))
   x5utr <- readRDS(paste0(a_base, "x5utr.hg38.gr.rds"))
   x3utr <- readRDS(paste0(a_base, "x3utr.hg38.gr.rds"))
   
@@ -60,9 +61,10 @@ if(rg == "hg38"){
   rRNA <- diffloop::bedToGRanges(paste0(g_base, "/mm10_rRNA.bed")) %>% rmchr()
   tRNA <- diffloop::bedToGRanges(paste0(g_base, "/mm10_tRNA.bed")) %>% rmchr()
   
+  gtffile <- "/data/joung/caleb/base_editing/GRCm38/genes.gtf"
+  
   a_base <-  paste0(g_base, "/rds_anno/")
-  exons <- readRDS(paste0(a_base, "exons.mm10.gr.rds")) %>% rmchr()
-  introns <- readRDS(paste0(a_base, "introns.mm10.gr.rds")) %>% rmchr()
+  cds <- readRDS(paste0(a_base, "cds.mm10.gr.rds")) %>% rmchr()
   x5utr <- readRDS(paste0(a_base, "x5utr.mm10.gr.rds")) %>% rmchr()
   x3utr <- readRDS(paste0(a_base, "x3utr.mm10.gr.rds")) %>% rmchr()
 } else {
@@ -91,6 +93,7 @@ ca_out <- system(ca_call, intern = TRUE) %>% stringr::str_split_fixed("\t", 10)
 #--------------
 outname <- gsub(".fastq.gz", "", fastq)
 star_call <- paste0(star, " --runMode alignReads --readFilesCommand zcat --outFilterMultimapNmax 1 --outFileNamePrefix ", outdir, "/", outname,
+                    " --quantMode GeneCounts --sjdbGTFfile ", gtffile,
                     " --runThreadN ",cores," --genomeDir ", g_base, " --readFilesIn ", fastq_trimmed, " --outSAMtype BAM Unsorted")
 star_out <- system(star_call, intern = TRUE)
 star_qc_reads <- parse_star(paste0(outdir, "/", outname, "Log.final.out"))
@@ -99,19 +102,19 @@ star_qc_reads <- parse_star(paste0(outdir, "/", outname, "Log.final.out"))
 # 03 - Import uniquely mapping reads / find overlaps
 #-----------------------------------
 GA <- readGAlignments(paste0(outdir, "/", outname, "Aligned.out.bam"))
-tRNA_ov <- findOverlaps(GA, tRNA)
-rRNA_ov <- findOverlaps(GA, rRNA)
+tRNA_ov <- findOverlaps(GA, tRNA, minoverlap = 10)
+rRNA_ov <- findOverlaps(GA, rRNA, minoverlap = 10)
 GA_filt <- GA[1:length(GA) %ni% c(queryHits(rRNA_ov), queryHits(tRNA_ov))]
 
 # Look for overlaps with other annotations
-ov_5 <- findOverlaps(GA_filt, x5utr)
-ov_3 <- findOverlaps(GA_filt, x3utr)
-ov_cds <- findOverlaps(GA_filt, c(exons, introns))
+ov_5 <- findOverlaps(GA_filt, x5utr, minoverlap = 10)
+ov_3 <- findOverlaps(GA_filt, x3utr, minoverlap = 10)
+ov_cds <- findOverlaps(GA_filt, cds, minoverlap = 10)
 
 # Classify remaining reads
-class <- ifelse(1:length(GA_filt) %in% queryHits(ov_5), "UTR5prime", 
-                ifelse(1:length(GA_filt) %in% queryHits(ov_3), "UTR3prime",
-                       ifelse(1:length(GA_filt) %in% queryHits(ov_cds), "CDS", "other")))
+class <- ifelse(1:length(GA_filt) %in% queryHits(ov_cds), "CDS", 
+                ifelse(1:length(GA_filt) %in% queryHits(ov_5), "UTR5prime",
+                       ifelse(1:length(GA_filt) %in% queryHits(ov_3), "UTR3prime", "other")))
 
 #-----------------------------------
 # 04 - Make qc plots
@@ -151,7 +154,6 @@ P2 <- ggplot(qc2df, aes(x = frag_size, y = prop*100, fill = Rbf, color = Rbf)) +
   scale_color_manual(values = c("lightgrey", "firebrick")) +
   labs(x = "Fragment size", y = "% of fragments") +
   annotate("text", label = red_quant2, x = 25, y = 10, size = 5, colour = "firebrick")
-
 
 # Plot 3 -- Pie graph of CDS / UTR / etc
 qc3df <- data.frame(
